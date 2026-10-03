@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KG STORE | Premium E-Commerce</title>
+    <meta name="description" content="Shop the best premium products at KG STORE.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">KG STORE</a>
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="#products-section">Products</a>
+                <a href="orders.html">My Orders</a>
+                <a href="cart.html" class="cart-icon">
+                    🛒 Cart
+                    <span id="cart-count" style="display: none;">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Discover Premium Products</h1>
+                <p>Elevate your lifestyle with our curated collection of high-quality items.</p>
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Search for products...">
+                    <button class="btn btn-primary" onclick="filterProducts()">Search</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="products-section" class="container">
+            <div class="filters-bar">
+                <h2 class="section-title" style="margin: 0;">Our Collection</h2>
+                <div class="filter-group">
+                    <select id="category-filter" onchange="filterProducts()">
+                        <option value="">All Categories</option>
+                    </select>
+                    <select id="sort-filter" onchange="filterProducts()">
+                        <option value="">Sort by Price</option>
+                        <option value="asc">Low to High</option>
+                        <option value="desc">High to Low</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="products-grid" class="products-grid">
+                <!-- Products will be loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/products.js"></script>
+    <script>
+        let allProducts = [];
+
+        async function init() {
+            allProducts = await fetchProducts();
+            populateCategories();
+            renderProducts(allProducts);
+        }
+
+        function populateCategories() {
+            const categories = [...new Set(allProducts.map(p => p.category))];
+            const select = document.getElementById('category-filter');
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            const sort = document.getElementById('sort-filter').value;
+
+            let filtered = allProducts.filter(p => {
+                const matchSearch = p.name.toLowerCase().includes(searchTerm) || p.description.toLowerCase().includes(searchTerm);
+                const matchCategory = category ? p.category === category : true;
+                return matchSearch && matchCategory;
+            });
+
+            if (sort === 'asc') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sort === 'desc') {
+                filtered.sort((a, b) => b.price - a.price);
+            }
+
+            renderProducts(filtered);
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('products-grid');
+            if (products.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 2rem;">No products found.</p>';
+                return;
+            }
+            grid.innerHTML = products.map(renderProductCard).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

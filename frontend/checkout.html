@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | KG STORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">KG STORE</a>
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="orders.html">My Orders</a>
+                <a href="cart.html" class="cart-icon">
+                    🛒 Cart
+                    <span id="cart-count" style="display: none;">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2 class="section-title">Checkout</h2>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+            <div style="flex: 2; min-width: 300px;">
+                <div class="form-container" style="margin: 0; max-width: 100%;">
+                    <h3 style="margin-bottom: 1.5rem;">Delivery Details</h3>
+                    <form id="checkout-form" onsubmit="handleCheckout(event)">
+                        <div class="form-group">
+                            <label for="address">Full Address</label>
+                            <textarea id="address" required rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="text" id="phone" required pattern="[0-9]{10}">
+                        </div>
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pincode">Pincode</label>
+                            <input type="text" id="pincode" required pattern="[0-9]{6}">
+                        </div>
+                        <div style="margin-bottom: 1.5rem; color: var(--text-muted);">
+                            * Payment Method: Cash on Delivery (COD) only for this educational project.
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Place Order</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div style="flex: 1; min-width: 250px;">
+                <div class="cart-summary" id="checkout-summary">
+                    <!-- Summary loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/checkout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!getToken()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (cart.length === 0) {
+                window.location.href = 'cart.html';
+                return;
+            }
+
+            let subtotal = 0;
+            let itemsHtml = '<div style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">';
+            
+            cart.forEach(item => {
+                const total = item.price * item.quantity;
+                subtotal += total;
+                itemsHtml += `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                        <span>${item.quantity}x ${item.name}</span>
+                        <span>₹${total.toFixed(2)}</span>
+                    </div>
+                `;
+            });
+            itemsHtml += '</div>';
+
+            const summaryHtml = `
+                <h3 style="margin-bottom: 1.5rem;">Order Summary</h3>
+                ${itemsHtml}
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>₹${subtotal.toFixed(2)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Delivery:</span>
+                    <span>₹50.00</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total Amount:</span>
+                    <span>₹${(subtotal + 50).toFixed(2)}</span>
+                </div>
+            `;
+            document.getElementById('checkout-summary').innerHTML = summaryHtml;
+        });
+    </script>
+</body>
+</html>

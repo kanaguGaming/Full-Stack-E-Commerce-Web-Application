@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | KG STORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">KG STORE</a>
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="orders.html" style="color: var(--primary-color);">My Orders</a>
+                <a href="cart.html" class="cart-icon">
+                    🛒 Cart
+                    <span id="cart-count" style="display: none;">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2 class="section-title">Order History</h2>
+        <div id="orders-list">
+            <!-- Orders loaded here -->
+        </div>
+    </main>
+
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/orders.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!getToken()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const orders = await fetchOrders();
+            const container = document.getElementById('orders-list');
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">You have no previous orders.</p>';
+                return;
+            }
+
+            container.innerHTML = orders.map(order => `
+                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 1rem; padding: 1.5rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 0.9rem;">Order ID: #${order.id}</div>
+                            <div style="font-weight: bold; margin-top: 0.25rem;">Total: ₹${order.total_amount.toFixed(2)}</div>
+                        </div>
+                        <div>
+                            ${getStatusBadge(order.status)}
+                            <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem;">${new Date(order.created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="margin-bottom: 1rem;">Items</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            ${order.items.map(item => `
+                                <div style="display: flex; justify-content: space-between; font-size: 0.95rem; background: rgba(15, 23, 42, 0.3); padding: 0.5rem 1rem; border-radius: 0.5rem;">
+                                    <span>${item.quantity}x ${item.product_name}</span>
+                                    <span>₹${(item.price * item.quantity).toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="margin-bottom: 1rem;">Tracking Progress</h4>
+                        ${getTimelineHtml(order.status)}
+                    </div>
+                </div>
+            `).join('');
+        });
+    </script>
+</body>
+</html>
